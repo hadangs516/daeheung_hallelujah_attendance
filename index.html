@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>할렐루야 찬양대 출석부</title>
+<style>
+:root{
+  --bg:#F4F8FC; --surface:#fff; --surface-2:#EAF2FB;
+  --ink:#152A42; --muted:#647588; --line:#DFE8F2;
+  --brand:#2A5D97; --brand-dim:#5C86B3;
+  --present:#2F7A4F; --absent:#C6402F;
+  --shadow:0 8px 22px rgba(21,42,66,.14);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  font-size:16px; line-height:1.5; letter-spacing:-.01em;
+  padding-bottom:100px;
+}
+button,input,select{font-family:inherit;font-size:16px;color:inherit}
+button{cursor:pointer;border:none;background:none;-webkit-appearance:none}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+h2{font-size:15px;font-weight:700;margin:0 0 10px;letter-spacing:-.01em}
+h2.mt{margin-top:26px}
+
+.topbar{padding:16px 18px 10px;padding-top:calc(16px + env(safe-area-inset-top))}
+.topbar span{font-size:14px;font-weight:700;color:var(--brand);letter-spacing:-.01em}
+
+main{max-width:600px;margin:0 auto;padding:0 16px 8px}
+section[hidden]{display:none}
+
+/* 히어로 */
+.hero{
+  background:linear-gradient(180deg,var(--surface-2) 0%,var(--bg) 100%);
+  border-radius:22px; padding:26px 20px 20px; text-align:center; margin-bottom:16px;
+  position:relative;
+}
+.hero .hd{font-size:14px;color:var(--muted);margin:0 0 6px}
+.hero .hn{font-size:52px;font-weight:800;letter-spacing:-.03em;margin:0;color:var(--ink)}
+.hero .hn .sl{color:var(--brand-dim);font-weight:600;margin:0 4px}
+.hero .hc{font-size:13px;color:var(--brand);font-weight:600;margin:6px 0 0}
+.back{position:absolute;right:16px;top:16px;font-size:13px;font-weight:700;color:#fff;background:var(--brand);padding:7px 13px;border-radius:999px}
+.back[hidden]{display:none}
+
+/* 그룹 헤더(포지션) */
+.grouphead{
+  padding:9px 16px 5px; font-size:12px; font-weight:700; color:var(--brand);
+  background:var(--surface); letter-spacing:.02em;
+}
+
+/* 체크 리스트 */
+ul.rows{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+ul.rows.saving{opacity:.5;pointer-events:none;transition:opacity .15s}
+ul.rows li.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-top:1px solid var(--line)}
+ul.rows li.grouphead + li.row,ul.rows li.row:first-child{border-top:none}
+.nm{font-size:16px;font-weight:600;color:var(--ink);transition:color .12s}
+li.untouched .nm{color:var(--muted)}
+.chip{font-size:13px;font-weight:700;padding:7px 17px;border-radius:999px;flex:none;background:var(--present);color:#fff;transition:background-color .12s,opacity .12s}
+li[data-status="결석"] .chip{background:var(--absent)}
+li.untouched .chip{opacity:.4}
+.emptyrow{padding:20px 4px;color:var(--muted);font-size:14px;text-align:center}
+
+/* 저장 FAB */
+.fab{position:fixed;right:16px;bottom:calc(66px + env(safe-area-inset-bottom));background:var(--brand);color:#fff;font-weight:700;font-size:15px;padding:14px 24px;border-radius:999px;box-shadow:var(--shadow);transition:opacity .15s,transform .1s}
+.fab:active{transform:scale(.97)}
+.fab.saving,.fab:disabled{opacity:.55}
+.fab[hidden]{display:none}
+
+/* 분석 */
+.range{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.range input{flex:1}
+.range span{color:var(--muted);font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:15px;margin-top:14px}
+th,td{padding:10px 4px;border-top:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+thead th{border-top:none;color:var(--muted);font-size:13px;font-weight:600;padding-top:0}
+thead th button{color:var(--muted);font-size:13px;font-weight:600}
+thead th button.on{color:var(--brand)}
+td.rate{font-weight:700}
+td.pos{color:var(--muted);font-size:13px}
+.pos{color:var(--muted);font-size:12px;font-weight:500;margin-top:2px}
+
+/* 날짜 목록 */
+.dates{list-style:none;margin:0;padding:0;max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--line);border-radius:18px}
+.dates li{border-top:1px solid var(--line)}
+.dates li:first-child{border-top:none}
+.dates button{display:flex;width:100%;align-items:center;justify-content:space-between;padding:13px 16px;gap:10px;text-align:left}
+.dates .dd{font-size:15px;font-weight:600}
+.dates .rr{font-size:14px;font-weight:700}
+.empty{color:var(--muted);font-size:14px;padding:18px 16px;text-align:center}
+
+/* 입력 */
+input[type=text],input[type=date],select{
+  padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;background:var(--surface);width:100%
+}
+input[type=text]:focus,input[type=date]:focus,select:focus{border-color:var(--brand)}
+.search{margin-bottom:10px}
+.rowin{display:flex;gap:8px;margin-bottom:8px}
+.rowin input,.rowin select{flex:1}
+
+.btn-solid{background:var(--brand);color:#fff;font-weight:700;padding:11px 18px;border-radius:11px}
+.btn-outline{background:var(--surface);color:var(--brand);font-weight:700;padding:10px 16px;border-radius:11px;border:1.5px solid var(--line);width:100%}
+.btn-outline:active{border-color:var(--brand)}
+
+/* 명단 관리 */
+.rlist{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.rlist li.row{display:flex;align-items:center;gap:6px;border-top:1px solid var(--line);padding-right:14px}
+.rlist li.grouphead + li.row,.rlist li.row:first-child{border-top:none}
+.rlist .nmbtn{flex:1;text-align:left;padding:14px 4px 14px 16px;font-size:16px;font-weight:600}
+.rlist .posbtn{color:var(--brand-dim);font-size:13px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--surface-2)}
+.rlist .del{color:var(--muted);font-size:13px;font-weight:700;padding:14px 4px 14px 10px}
+.count{color:var(--muted);font-weight:500;font-size:13px}
+
+/* 하단 탭 */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{flex:1;padding:11px 4px 9px;font-size:12.5px;font-weight:600;color:var(--muted);position:relative}
+.tabbar button.on{color:var(--brand)}
+.tabbar button.on::before{content:"";position:absolute;left:50%;top:2px;transform:translateX(-50%);width:18px;height:3px;border-radius:3px;background:var(--brand)}
+
+/* 로그인 */
+#gate{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px}
+#gate[hidden]{display:none}
+.gatecard{width:100%;max-width:280px;text-align:center}
+.gatecard .mark{font-size:15px;font-weight:700;color:var(--brand);margin:0 0 22px}
+.gatecard input{width:100%;padding:15px;border:1.5px solid var(--line);border-radius:13px;background:var(--surface);text-align:center;font-size:19px;letter-spacing:.2em;color:var(--ink);margin-bottom:10px}
+.gatecard input:focus{border-color:var(--brand)}
+.gatecard button{width:100%;padding:14px;border-radius:13px;background:var(--brand);color:#fff;font-weight:700;font-size:15px}
+.gate-err{min-height:18px;font-size:13px;color:var(--absent);margin:10px 0 0}
+
+/* 모달 */
+#modal{position:fixed;inset:0;background:rgba(21,42,66,.4);z-index:45;display:flex;align-items:center;justify-content:center;padding:24px}
+#modal[hidden]{display:none}
+#modal .mbox{background:var(--surface);border-radius:16px;padding:20px;width:100%;max-width:320px}
+#modal p{margin:0 0 16px;font-size:15px;line-height:1.55;white-space:pre-line}
+#mextra{margin-bottom:6px}
+#mextra select{margin-bottom:8px}
+#modal #mbtns{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#modal #mbtns button{padding:12px;border-radius:11px;font-size:15px;font-weight:600;background:var(--brand);color:#fff}
+#modal #mbtns button.alt{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+
+#toast{position:fixed;left:50%;bottom:calc(66px + env(safe-area-inset-bottom) + 60px);transform:translateX(-50%) translateY(8px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:40;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gatecard">
+    <p class="mark">할렐루야 찬양대</p>
+    <input type="text" id="pwin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="비밀번호">
+    <button id="pwbtn">확인</button>
+    <p class="gate-err" id="pwerr"></p>
+  </div>
+</div>
+
+<header class="topbar"><span>할렐루야 찬양대</span></header>
+
+<main>
+  <section id="today">
+    <div class="hero">
+      <button id="backToday" class="back" hidden>오늘로</button>
+      <p class="hd num" id="heroDate">—</p>
+      <p class="hn num"><span id="heroP">0</span><span class="sl">/</span><span id="heroT">0</span></p>
+      <p class="hc" id="heroCap"></p>
+    </div>
+    <ul class="rows" id="checkList"></ul>
+  </section>
+
+  <section id="log" hidden>
+    <h2>출석률 분석</h2>
+    <div class="range">
+      <input type="date" id="from"><span>~</span><input type="date" id="to">
+    </div>
+    <button class="btn-outline" id="runAnalyze">분석하기</button>
+    <div id="analyzeOut"></div>
+
+    <h2 class="mt">지난 기록</h2>
+    <input type="text" id="dsearch" class="search" placeholder="날짜 검색" autocomplete="off">
+    <ul class="dates" id="dateList"></ul>
+  </section>
+
+  <section id="roster" hidden>
+    <h2>단원 추가</h2>
+    <div class="rowin">
+      <input type="text" id="newName" placeholder="이름" autocomplete="off">
+    </div>
+    <div class="rowin">
+      <select id="newPos"></select>
+      <input type="text" id="newPosOther" placeholder="새 포지션 이름" style="display:none">
+    </div>
+    <button class="btn-solid" id="addBtn" style="width:100%">추가</button>
+
+    <h2 class="mt">단원 <span class="count" id="rcount"></span></h2>
+    <ul class="rlist" id="rosterList"></ul>
+  </section>
+</main>
+
+<button class="fab" id="saveBtn" hidden>저장</button>
+
+<nav class="tabbar">
+  <button data-tab="today" class="on">출석</button>
+  <button data-tab="log">기록</button>
+  <button data-tab="roster">명단</button>
+</nav>
+
+<div id="modal" hidden>
+  <div class="mbox">
+    <p id="mtitle"></p>
+    <div id="mextra"></div>
+    <div id="mbtns"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════ 설정 ══════════ */
+const API_URL = "https://script.google.com/macros/s/AKfycbxJx4JBPJu0C4Hpg-gN6Nt4rvMeawyBPMaNK6Wka1MPXwxb3QIYs8lyu0LHy1R0JCC9/exec";
+
+const PW_KEY = "hcc_pw_v1";
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function lsRemove(k){ try{ localStorage.removeItem(k); }catch(e){} }
+let PW = lsGet(PW_KEY) || "";
+
+/* ══════════ 통신 ══════════ */
+function jsonp(body){
+  return new Promise((res,rej)=>{
+    const cb = "cb_"+Math.random().toString(36).slice(2);
+    const s = document.createElement("script");
+    const t = setTimeout(()=>{cleanup();rej(new Error("timeout"))},20000);
+    function cleanup(){clearTimeout(t);delete window[cb];s.remove()}
+    window[cb] = d=>{cleanup();res(d)};
+    s.onerror = ()=>{cleanup();rej(new Error("network"))};
+    s.src = API_URL+"?callback="+cb+"&p="+encodeURIComponent(JSON.stringify(body));
+    document.body.appendChild(s);
+  });
+}
+async function api(action, payload){
+  const body = Object.assign({action, pw:PW}, payload||{});
+  try{
+    const r = await fetch(API_URL,{method:"POST",body:JSON.stringify(body)});
+    if(!r.ok) throw new Error("http "+r.status);
+    return await r.json();
+  }catch(e){
+    try{ return await jsonp(body); }catch(e2){ return { ok:false, error:String(e2) }; }
+  }
+}
+
+/* ══════════ 상태 ══════════ */
+let roster = [];      // [{name,position}]
+let positions = [];   // ["지휘자","반주자",...]
+let dates = [];
+let state = {};
+let viewDate = "";
+let sortKey = "rate", sortDir = -1;
+
+/* ══════════ 유틸 ══════════ */
+const WD = ["일","월","화","수","목","금","토"];
+function todayStr(){
+  const d = new Date();
+  const p = n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());
+}
+function fmtK(s){ const [y,m,d] = s.split("-").map(Number); return y+"년 "+m+"월 "+d+"일"; }
+function fmtShort(s){ const [y,m,d] = s.split("-").map(Number); return m+"월 "+d+"일 ("+weekday(s).slice(0,1)+")"; }
+function weekday(s){ const [y,m,d] = s.split("-").map(Number); return WD[new Date(y,m-1,d).getDay()]+"요일"; }
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("on");
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove("on"),1900);
+}
+function rateColor(r){
+  if(r===null||r===undefined) return "var(--muted)";
+  if(r>=100) return "#16A34A";
+  if(r>=90)  return "#77B32B";
+  if(r>=75)  return "#D9A408";
+  if(r>=60)  return "#E07B1F";
+  return "#D0342C";
+}
+// 정렬돼서 오는 목록을 포지션 그룹 헤더와 함께 렌더
+function renderGrouped(list, rowFn){
+  let html = ""; let last = undefined;
+  list.forEach(item=>{
+    const p = item.position || "미지정";
+    if(p !== last){ html += '<li class="grouphead">'+esc(p)+'</li>'; last = p; }
+    html += rowFn(item);
+  });
+  return html;
+}
+
+/* ══════════ 모달 ══════════ */
+function askChoice(text, opts){
+  return new Promise(res=>{
+    const m = document.getElementById("modal");
+    document.getElementById("mtitle").textContent = text;
+    document.getElementById("mextra").innerHTML = "";
+    const wrap = document.getElementById("mbtns");
+    wrap.innerHTML = "";
+    opts.forEach(o=>{
+      const b = document.createElement("button");
+      b.textContent = o.label;
+      if(o.alt) b.className = "alt";
+      b.onclick = ()=>{ m.hidden = true; res(o.value); };
+      wrap.appendChild(b);
+    });
+    m.hidden = false;
+  });
+}
+function positionOptionsHTML(current){
+  return positions.map(p=>'<option value="'+esc(p)+'"'+(p===current?" selected":"")+'>'+esc(p)+'</option>').join("")
+    + '<option value="__other__">기타</option>';
+}
+function askPosition(current){
+  return new Promise(res=>{
+    const m = document.getElementById("modal");
+    document.getElementById("mtitle").textContent = "포지션 선택";
+    const extra = document.getElementById("mextra");
+    extra.innerHTML =
+      '<select id="posSel">'+positionOptionsHTML(current)+'</select>'
+      + '<input type="text" id="posOther" placeholder="새 포지션 이름" style="display:none">';
+    const sel = document.getElementById("posSel");
+    const other = document.getElementById("posOther");
+    if(positions.indexOf(current) < 0 && current){ sel.value = "__other__"; other.style.display=""; other.value = current; }
+    sel.onchange = ()=>{
+      other.style.display = (sel.value==="__other__") ? "" : "none";
+      if(sel.value==="__other__") other.focus();
+    };
+    const wrap = document.getElementById("mbtns");
+    wrap.innerHTML = "";
+    const ok = document.createElement("button");
+    ok.textContent = "확인";
+    ok.onclick = ()=>{
+      let v = sel.value === "__other__" ? other.value.trim() : sel.value;
+      if(!v) return;
+      m.hidden = true; res(v);
+    };
+    const cancel = document.createElement("button");
+    cancel.textContent = "취소"; cancel.className = "alt";
+    cancel.onclick = ()=>{ m.hidden = true; res(null); };
+    wrap.appendChild(ok); wrap.appendChild(cancel);
+    m.hidden = false;
+  });
+}
+
+/* ══════════ 게이트 ══════════ */
+const gate = document.getElementById("gate");
+document.getElementById("pwbtn").onclick = tryLogin;
+document.getElementById("pwin").addEventListener("keydown", e=>{ if(e.key==="Enter") tryLogin(); });
+
+async function tryLogin(){
+  const v = document.getElementById("pwin").value.trim();
+  if(!v) return;
+  const err = document.getElementById("pwerr");
+  const btn = document.getElementById("pwbtn");
+  err.textContent = ""; btn.textContent = "확인 중";
+  const r = await api("auth",{pw:v});
+  btn.textContent = "확인";
+  if(r && r.pass){
+    PW = v; lsSet(PW_KEY, v);
+    gate.hidden = true;
+    boot();
+  }else{
+    err.textContent = "비밀번호가 맞지 않습니다.";
+    document.getElementById("pwin").value = "";
+  }
+}
+(async function(){
+  if(PW){
+    const r = await api("auth",{pw:PW});
+    if(r && r.pass){ gate.hidden = true; boot(); return; }
+    lsRemove(PW_KEY); PW="";
+  }
+  document.getElementById("pwin").focus();
+})();
+
+/* ══════════ 시작 ══════════ */
+async function boot(){
+  const r = await api("init");
+  if(!r || !r.ok){
+    document.getElementById("checkList").innerHTML = '<li class="emptyrow">연결하지 못했습니다. 잠시 후 다시 시도해주세요.</li>';
+    return;
+  }
+  roster = r.roster; dates = r.dates; positions = r.positions || [];
+  renderNewPosSelect();
+  renderRoster();
+  renderDates();
+  await openDate(todayStr());
+}
+
+function renderNewPosSelect(){
+  document.getElementById("newPos").innerHTML = positionOptionsHTML(null);
+}
+document.getElementById("newPos").addEventListener("change", e=>{
+  const other = document.getElementById("newPosOther");
+  const isOther = e.target.value === "__other__";
+  other.style.display = isOther ? "" : "none";
+  if(isOther) other.focus();
+});
+
+/* ══════════ 출석 화면 ══════════ */
+async function openDate(date){
+  viewDate = date;
+  const r = await api("loadDate",{date});
+  const rec = (r && r.records) || {};
+  const saved = Object.keys(rec).length > 0;
+
+  document.getElementById("heroDate").textContent = fmtK(date);
+  document.getElementById("heroCap").textContent = weekday(date) + (saved ? " · 저장됨" : "");
+  document.getElementById("backToday").hidden = (date === todayStr());
+
+  state = {};
+  roster.forEach(p=>{
+    state[p.name] = rec[p.name] ? {status:rec[p.name], touched:true} : {status:"출석", touched:false};
+  });
+  renderCheck();
+  showTab("today");
+}
+document.getElementById("backToday").onclick = ()=>openDate(todayStr());
+
+function renderCheck(){
+  const ul = document.getElementById("checkList");
+  if(!roster.length){
+    ul.innerHTML = '<li class="emptyrow">아직 등록된 단원이 없습니다.</li>';
+    updateCount(); return;
+  }
+  ul.innerHTML = renderGrouped(roster, p=>{
+    const s = state[p.name];
+    return '<li class="row'+(s.touched?"":' untouched')+'" data-name="'+esc(p.name)+'" data-status="'+s.status+'">'
+         + '<span class="nm">'+esc(p.name)+'</span>'
+         + '<button type="button" class="chip">'+s.status+'</button></li>';
+  });
+  updateCount();
+}
+document.getElementById("checkList").addEventListener("click", e=>{
+  const li = e.target.closest("li[data-name]");
+  if(!li) return;
+  const n = li.dataset.name;
+  const s = state[n];
+  s.status = (s.status==="출석") ? "결석" : "출석";
+  s.touched = true;
+  li.dataset.status = s.status;
+  li.classList.remove("untouched");
+  li.querySelector(".chip").textContent = s.status;
+  updateCount();
+});
+function updateCount(){
+  const total = roster.length;
+  const p = roster.filter(x=>state[x.name] && state[x.name].status==="출석").length;
+  document.getElementById("heroP").textContent = p;
+  document.getElementById("heroT").textContent = total;
+}
+document.getElementById("saveBtn").onclick = async ()=>{
+  if(!roster.length) return;
+  const ul = document.getElementById("checkList");
+  const btn = document.getElementById("saveBtn");
+  ul.classList.add("saving"); btn.classList.add("saving"); btn.disabled = true;
+  const records = roster.map(p=>({name:p.name, status:state[p.name].status}));
+  const r = await api("save",{date:viewDate, records});
+  ul.classList.remove("saving"); btn.classList.remove("saving"); btn.disabled = false;
+  if(r && r.ok){
+    roster.forEach(p=>state[p.name].touched = true);
+    renderCheck();
+    dates = r.dates; renderDates();
+    document.getElementById("heroCap").textContent = weekday(viewDate) + " · 저장됨";
+    toast(fmtK(viewDate)+" 저장했습니다");
+  }else{
+    toast("저장하지 못했습니다. 다시 시도해주세요.");
+  }
+};
+
+/* ══════════ 날짜 목록 ══════════ */
+function renderDates(){
+  const q = document.getElementById("dsearch").value.trim();
+  const list = dates.filter(d=>{
+    if(!q) return true;
+    const digits = d.date.replace(/-/g,"");
+    const qd = q.replace(/\D/g,"");
+    if(qd && digits.indexOf(qd)>=0) return true;
+    return d.date.indexOf(q)>=0 || fmtK(d.date).indexOf(q)>=0;
+  });
+  const ul = document.getElementById("dateList");
+  if(!list.length){
+    ul.innerHTML = '<li class="empty">'+(dates.length?"검색 결과가 없습니다.":"아직 저장된 기록이 없습니다.")+'</li>';
+    return;
+  }
+  ul.innerHTML = list.map(d=>{
+    const rate = d.total ? Math.round(d.present/d.total*1000)/10 : null;
+    return '<li><button data-d="'+d.date+'"><span class="dd num">'+fmtShort(d.date)+'</span>'
+      + '<span class="rr num" style="color:'+rateColor(rate)+'">'+d.present+'/'+d.total+'</span></button></li>';
+  }).join("");
+}
+document.getElementById("dsearch").addEventListener("input", renderDates);
+document.getElementById("dateList").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-d]");
+  if(b) openDate(b.dataset.d);
+});
+
+/* ══════════ 분석 ══════════ */
+let analyzeRows = null;
+document.getElementById("runAnalyze").onclick = async ()=>{
+  const from = document.getElementById("from").value;
+  const to = document.getElementById("to").value;
+  if(from && to && from > to){ toast("기간이 거꾸로입니다."); return; }
+  document.getElementById("analyzeOut").innerHTML = '<p style="color:var(--muted);font-size:14px;margin-top:14px">계산 중</p>';
+  const r = await api("analyze",{from,to});
+  if(!r || !r.ok){ document.getElementById("analyzeOut").innerHTML = '<p style="color:var(--muted);font-size:14px;margin-top:14px">불러오지 못했습니다.</p>'; return; }
+  analyzeRows = r.rows;
+  renderAnalyze();
+};
+function renderAnalyze(){
+  if(!analyzeRows) return;
+  const rows = analyzeRows.slice().sort((a,b)=>{
+    if(sortKey==="name") return a.name.localeCompare(b.name,"ko")*sortDir;
+    const av = a[sortKey]===null?-1:a[sortKey], bv = b[sortKey]===null?-1:b[sortKey];
+    if(av===bv) return a.name.localeCompare(b.name,"ko");
+    return (av-bv)*sortDir;
+  });
+  const th = (k,label)=>'<th><button data-k="'+k+'" class="'+(sortKey===k?"on":"")+'">'+label+(sortKey===k?(sortDir<0?" ↓":" ↑"):"")+'</button></th>';
+  const body = rows.map(r=>{
+    const rateTxt = r.rate===null ? "기록 없음" : r.rate+"%";
+    return '<tr><td>'+esc(r.name)+'<div class="pos">'+esc(r.position||"")+'</div></td><td class="num">'+r.present+'</td><td class="num">'+r.absent+'</td>'
+         + '<td class="rate num" style="color:'+rateColor(r.rate)+'">'+rateTxt+'</td></tr>';
+  }).join("");
+  document.getElementById("analyzeOut").innerHTML =
+    '<table><thead><tr>'+th("name","이름")+th("present","출석")+th("absent","결석")+th("rate","출석률")
+    +'</tr></thead><tbody>'+body+'</tbody></table>';
+}
+document.getElementById("analyzeOut").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-k]");
+  if(!b) return;
+  const k = b.dataset.k;
+  if(sortKey===k) sortDir = -sortDir; else { sortKey = k; sortDir = (k==="name")?1:-1; }
+  renderAnalyze();
+});
+
+/* ══════════ 명단 관리 ══════════ */
+function renderRoster(){
+  document.getElementById("rcount").textContent = roster.length ? roster.length+"명" : "";
+  const ul = document.getElementById("rosterList");
+  ul.innerHTML = roster.length
+    ? renderGrouped(roster, p=>
+        '<li class="row"><button class="nmbtn" data-r="'+esc(p.name)+'">'+esc(p.name)+'</button>'
+        + '<button class="posbtn" data-p="'+esc(p.name)+'">'+esc(p.position||"미지정")+'</button>'
+        + '<button class="del" data-x="'+esc(p.name)+'">삭제</button></li>')
+    : '<li class="empty">단원을 추가하세요.</li>';
+}
+
+document.getElementById("addBtn").onclick = async ()=>{
+  const inp = document.getElementById("newName");
+  const name = inp.value.trim();
+  if(!name) return;
+  const posSel = document.getElementById("newPos");
+  const position = posSel.value === "__other__" ? document.getElementById("newPosOther").value.trim() : posSel.value;
+  if(position && positions.indexOf(position) < 0) positions.push(position);
+
+  const r = await api("addCheck",{name, position});
+  if(!r || !r.ok){ toast((r&&r.error)||"추가하지 못했습니다."); return; }
+
+  if(r.conflict === "active"){
+    const c = await askChoice(
+      '"'+name+'" 은 이미 명단에 있습니다.\n동명이인으로 추가하면 두 사람 모두 이름 뒤에 번호가 붙습니다.',
+      [{label:"동명이인으로 추가", value:"new"}, {label:"그만두기", value:null, alt:true}]
+    );
+    if(!c) return;
+    return finishAdd(await api("addForce",{name, mode:"new", position}), inp);
+  }
+  if(r.conflict === "history"){
+    const c = await askChoice(
+      '"'+name+'" 은 예전에 명단에 있던 이름입니다.\n어느 쪽인가요?',
+      [{label:"그 사람이 다시 들어옴", value:"restore"},
+       {label:"이름만 같은 다른 사람", value:"new", alt:true},
+       {label:"그만두기", value:null, alt:true}]
+    );
+    if(!c) return;
+    return finishAdd(await api("addForce",{name, mode:c, position}), inp);
+  }
+  finishAdd(r, inp);
+};
+function finishAdd(r, inp){
+  if(!r || !r.ok){ toast((r&&r.error)||"추가하지 못했습니다."); return; }
+  roster = r.roster; inp.value = "";
+  document.getElementById("newPos").value = positions[0] || "__other__";
+  document.getElementById("newPosOther").style.display = "none";
+  document.getElementById("newPosOther").value = "";
+  renderRoster(); refreshCurrent();
+  toast(r.added+" 추가했습니다");
+}
+
+document.getElementById("rosterList").addEventListener("click", async e=>{
+  const del = e.target.closest("button[data-x]");
+  if(del){
+    const n = del.dataset.x;
+    const c = await askChoice('"'+n+'" 을 명단에서 뺄까요?\n지난 출석 기록은 그대로 남습니다.',
+      [{label:"빼기", value:true}, {label:"그만두기", value:false, alt:true}]);
+    if(!c) return;
+    const r = await api("remove",{name:n});
+    if(r && r.ok){ await refreshRosterFromServer(); toast(n+" 뺐습니다"); }
+    else toast((r&&r.error)||"빼지 못했습니다.");
+    return;
+  }
+  const ren = e.target.closest("button[data-r]");
+  if(ren){
+    const n = ren.dataset.r;
+    const v = prompt("이름 수정", n);
+    if(v===null) return;
+    const nv = v.trim();
+    if(!nv || nv===n) return;
+    const r = await api("rename",{oldName:n, newName:nv});
+    if(r && r.ok){ await refreshRosterFromServer(); toast("이름을 바꿨습니다"); }
+    else toast((r&&r.error)||"바꾸지 못했습니다.");
+    return;
+  }
+  const posBtn = e.target.closest("button[data-p]");
+  if(posBtn){
+    const n = posBtn.dataset.p;
+    const cur = (roster.find(p=>p.name===n)||{}).position || "";
+    const v = await askPosition(cur);
+    if(v===null || v===cur) return;
+    if(positions.indexOf(v) < 0) positions.push(v);
+    const r = await api("updatePosition",{name:n, position:v});
+    if(r && r.ok){ await refreshRosterFromServer(); toast("포지션을 바꿨습니다"); }
+    else toast((r&&r.error)||"바꾸지 못했습니다.");
+  }
+});
+
+async function refreshRosterFromServer(){
+  const r = await api("init");
+  if(r && r.ok){ roster = r.roster; positions = r.positions || []; }
+  renderRoster(); renderNewPosSelect(); refreshCurrent();
+}
+
+function refreshCurrent(){
+  const next = {};
+  roster.forEach(p=>{ next[p.name] = state[p.name] || {status:"출석", touched:false}; });
+  state = next;
+  renderCheck();
+  analyzeRows = null;
+  document.getElementById("analyzeOut").innerHTML = "";
+}
+
+/* ══════════ 탭 ══════════ */
+function showTab(id){
+  document.querySelectorAll(".tabbar button").forEach(b=>b.classList.toggle("on", b.dataset.tab===id));
+  ["today","log","roster"].forEach(s=>document.getElementById(s).hidden = (s!==id));
+  document.getElementById("saveBtn").hidden = (id!=="today") || !roster.length;
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".tabbar button").forEach(b=>b.onclick = ()=>showTab(b.dataset.tab));
+</script>
+</body>
+</html>
